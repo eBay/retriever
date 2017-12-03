@@ -1,0 +1,33 @@
+{
+  "name": "@ebay/retriever",
+  "version": "1.0.0",
+  "description": "retrieve nested data safely",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint *.js **/*.js",
+    "test": "istanbul cover _mocha test/index.js && node test/perf.js",
+    "rep": "open coverage/lcov-report/index.html",
+    "all": "npm run lint && npm test && npm run rep"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eBay/retriever.git"
+  },
+  "keywords": [
+    "retrieve",
+    "nested data"
+  ],
+  "author": "Yoni Medoff",
+  "license": "MIT",
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
+    "eslint": "^3.19.0",
+    "eslint-config-ebay": "^0.1.4",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.3.0"
+  }
+}
