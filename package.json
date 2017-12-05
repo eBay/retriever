@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint *.js **/*.js",
     "test": "istanbul cover _mocha test/index.js && node test/perf.js",
+    "build": "npm run lint && npm test",
     "rep": "open coverage/lcov-report/index.html",
     "all": "npm run lint && npm test && npm run rep"
   },
