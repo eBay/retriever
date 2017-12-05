@@ -1,9 +1,9 @@
 # retriever
 
 `retriever` is a small utility library for retrieving nested data safely. It contains several improvements over solutions like `lodash.get`, such as:
-- Type Checking: Ensure that accessed data is of the exact type that is needed.
-- Optional Logging: Log warnings in cases of required data that is missing or of the wrong type.
-- Convenient Defaults: Retrieving data looks for strings by default, and also provides extra utility for objects.
+- **Type checking**: Ensure that accessed data is of the exact type that is needed.
+- **Optional logging**: Log warnings in cases of required data that is missing or of the wrong type.
+- **Convenient defaults**: Retrieving data looks for strings by default, and also provides extra utility for objects.
 
 ## Installation
 
