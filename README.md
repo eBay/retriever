@@ -1,6 +1,9 @@
 # retriever
 
-`retriever` is a small utility library for retrieving nested data safely. It contains several improvements over solutions like `lodash.get`, such as convenient defaults, type checking, and optional logging.
+`retriever` is a small utility library for retrieving nested data safely. It contains several improvements over solutions like `lodash.get`, such as:
+- **Type checking**: Ensure that accessed data is of the exact type that is needed.
+- **Optional logging**: Log warnings in cases of required data that is missing or of the wrong type.
+- **Convenient defaults**: Retrieving data looks for strings by default, and also provides extra utility for objects.
 
 ## Installation
 
@@ -15,8 +18,8 @@ var r = require('@ebay/retriever');
 
 // set optional logger for missing data or type mismatch with defaultValue
 r.setLogger({
-    debug: function (messageFormat, lookupPath, defaultValue, logType) {}, // used with get() and has()
-    warn: function (messageFormat, lookupPath, defaultValue, logType) {} // used with need()
+    debug: function (messageFormat, eventType, lookupPath, defaultValue) {}, // used with get() and has()
+    warn: function (messageFormat, eventType, lookupPath, defaultValue) {} // used with need()
 });
 
 // sample data where content is not guaranteed
@@ -104,12 +107,18 @@ This will log `debug` if the data is missing.
 
 ### `setLogger(logger)`
 
-Sets the logger to be used for logging any issues in retrieving the data. If logging is desired, this should be called once at the start of the app to be used for all subsequent usage. If `retriever` logging is desired on the client, `setLogger` must be initialized in the browser as well.
+Sets the logger to be used for logging any issues in retrieving the data. If logging is desired, this should be called once at the start of the app to be used for all subsequent usage. If `retriever` logging is desired on the client, `setLogger` must be initialized in the browser as well. If you are using this with other logging libraries, you'll need to ensure that the logging is enabled per those environment settings.
 
 **Arguments**
 
 - `logger` (Object): A logger object containing the functions `debug` and `warn`. These functions will be called with the following parameters:
-`messageFormat`, `lookupPath`, `defaultValue`, `logType`.
+`messageFormat`, `eventType`, `lookupPath`, `defaultValue`.
+
+For example, a type mismatch warning, the parameters might look like this:
+- `messageFormat`: `'event: %s, path: %s, default: %s'`
+- `eventType`: `'typeMismatch'`
+- `lookupPath`: `'data.path[0]'`
+- `default`: `''`
 
 ## Similar Projects
 - [Lodash get()](https://lodash.com/docs/#get)
