@@ -2,8 +2,7 @@
 
 var r = require('../');
 
-r.setLogger({
-    debug: function () {},
+r.startLogging({
     warn: function () {}
 });
 
@@ -135,4 +134,5 @@ var objectVariations = [
     });
 });
 
+r.endLogging();
 process.exit();

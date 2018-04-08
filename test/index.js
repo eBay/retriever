@@ -1,10 +1,8 @@
 'use strict';
 
 var chai = require('chai');
-var spies = require('chai-spies');
+var sinon = require('sinon');
 var r = require('../');
-
-chai.use(spies);
 
 var expect = chai.expect;
 var EVENT_TYPES = r.privates.EVENT_TYPES;
@@ -114,29 +112,72 @@ describe('has()', function () {
 describe('logging', function () {
     ['need', 'get', 'has'].forEach(function (accessor) {
         [
-            {lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING},
-            {lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH}
+            { lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING },
+            { lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH }
         ].forEach(function (scenario) {
+            var isHas = accessor === 'has';
             // skip typeMismatch scenario for has()
-            if (!(accessor === 'has' && scenario.event === EVENT_TYPES.TYPE_MISMATCH)) {
-                it('logs ' + scenario.event + ' with ' + accessor + '() using supplied logger', function (done) {
-                    var log = function (message, eventType) {
-                        expect(eventType).to.equal(scenario.event);
-                        done();
-                    };
-                    var spy = chai.spy(log);
-                    var logType = (accessor === 'need') ? 'warn' : 'debug';
-                    var mockLogger = {};
-                    mockLogger[logType] = spy;
-
-                    r.setLogger();
-                    r[accessor](basicObject, scenario.lookup);
-                    expect(spy).not.to.have.been.called();
-
-                    r.setLogger(mockLogger);
-                    r[accessor](basicObject, scenario.lookup);
-                });
+            if ((isHas && scenario.event === EVENT_TYPES.TYPE_MISMATCH)) {
+                return;
             }
+
+            describe(accessor + '(), event: ' + scenario.event, function () {
+                var spy;
+                var mockLogger;
+                var shouldWarn = accessor === 'get' ? true : undefined;
+
+                beforeEach(function () {
+                    spy = sinon.spy();
+                    mockLogger = { warn: spy };
+                });
+
+                it('logs a warning through supplied logger', function () {
+                    r.startLogging(mockLogger);
+                    r[accessor](basicObject, scenario.lookup, isHas ? true : '', shouldWarn);
+                    r.endLogging();
+                    expect(spy.callCount).to.equal(2);
+                    var firstEventData = spy.getCall(0).args[0];
+                    var secondEventData = spy.getCall(1).args[0];
+                    expect(firstEventData).to.contain(scenario.event + ': 1');
+                    expect(secondEventData).to.contain(scenario.event);
+                });
+            });
+        });
+    });
+
+    ['get', 'has'].forEach(function (accessor) {
+        [
+            { lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING },
+            { lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH }
+        ].forEach(function (scenario) {
+            describe(accessor + '(), event: ' + scenario.event, function () {
+                var spy;
+                var mockLogger;
+
+                beforeEach(function () {
+                    spy = sinon.spy();
+                    mockLogger = { warn: spy };
+                });
+
+                it('does not log if logging was not started', function () {
+                    r[accessor](basicObject, scenario.lookup, false, false);
+                    expect(spy.called).to.equal(false);
+                });
+
+                it('does not log if logger was not supplied', function () {
+                    r.startLogging();
+                    r[accessor](basicObject, scenario.lookup, false, false);
+                    expect(spy.called).to.equal(false);
+                    r.endLogging();
+                });
+
+                it('does not log a warning through supplied logger', function () {
+                    r.startLogging(mockLogger);
+                    r[accessor](basicObject, scenario.lookup, false, false);
+                    r.endLogging();
+                    expect(spy.callCount).to.equal(0);
+                });
+            });
         });
     });
 });

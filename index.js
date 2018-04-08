@@ -2,12 +2,15 @@
 
 var _get = require('lodash.get');
 
-var logger;
 var isArray = Array.isArray;
 var EVENT_TYPES = {
     DATA_MISSING: 'dataMissing',
     TYPE_MISMATCH: 'typeMismatch'
 };
+var logger;
+var logging = false;
+var logs = [];
+var stats = {};
 
 /**
  * Determine if an object is empty
@@ -48,10 +51,9 @@ function getType(val) {
  * @param defaultValue - default when data is absent, also used to check type
  * @param logType - logger method to use
  */
-function log(eventType, path, defaultValue, logType) {
-    if (logger[logType]) {
-        logger[logType]('event: %s, path: %s, default: %s', eventType, path, defaultValue);
-    }
+function log(eventType, path, defaultValue) {
+    logs.push('event: ' + eventType + ', path: ' + path + ', default: ' + defaultValue);
+    stats[eventType]++;
 }
 
 /**
@@ -61,7 +63,7 @@ function log(eventType, path, defaultValue, logType) {
  * @param defaultValue - default when data is absent, also used to check type
  * @param logType - logger method to use
  */
-function access(object, path, defaultValue, logType) {
+function access(object, path, defaultValue, shouldWarn) {
     var eventType;
     var result = _get(object, path);
     var typeofResult = getType(result);
@@ -84,19 +86,19 @@ function access(object, path, defaultValue, logType) {
         result = defaultValue;
     }
 
-    if (logger && eventType) {
-        log(eventType, path, defaultValue, logType);
+    if (eventType && logging && shouldWarn) {
+        log(eventType, path, defaultValue);
     }
 
     return result;
 }
 
 function need(object, path, defaultValue) {
-    return access(object, path, defaultValue, 'warn');
+    return access(object, path, defaultValue, true);
 }
 
-function get(object, path, defaultValue) {
-    return access(object, path, defaultValue, 'debug');
+function get(object, path, defaultValue, shouldWarn) {
+    return access(object, path, defaultValue, shouldWarn);
 }
 
 /**
@@ -104,14 +106,14 @@ function get(object, path, defaultValue) {
  * @param object - the object where we are extracting data
  * @param path - a string representation of the lookup
  */
-function has(object, path) {
+function has(object, path, shouldWarn) {
     var result = _get(object, path);
     var typeofResult = getType(result);
 
     result = !(typeofResult === 'undefined' || typeofResult === 'null');
 
-    if (logger && !result) {
-        log(EVENT_TYPES.DATA_MISSING, path, false, 'debug');
+    if (!result && logging && shouldWarn) {
+        log(EVENT_TYPES.DATA_MISSING, path, false);
     }
 
     return result;
@@ -119,17 +121,35 @@ function has(object, path) {
 
 /**
  * Set logger to be used for all future usage
- * @param object l - the logger with debug and warn functions
+ * @param object l - the logger with a warn function
  */
-function setLogger(l) {
-    logger = l;
+function startLogging(l) {
+    if (l && l.warn) {
+        logger = l;
+        logging = true;
+        logs = [];
+        stats.dataMissing = 0;
+        stats.typeMismatch = 0;
+    }
+}
+
+function endLogging() {
+    if (logger && logger.warn && logs.length) {
+        logging = false;
+        var dataMissing = stats.dataMissing;
+        var typeMismatch = stats.typeMismatch;
+        var total = dataMissing + typeMismatch;
+        logger.warn('Warnings: ' + total + ', dataMissing: ' + dataMissing + ', typeMismatch: ' + typeMismatch);
+        logger.warn(logs.join('\n'));
+    }
 }
 
 module.exports = {
     need: need,
     get: get,
     has: has,
-    setLogger: setLogger
+    startLogging: startLogging,
+    endLogging: endLogging
 };
 
 module.exports.privates = {

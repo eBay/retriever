@@ -18,8 +18,7 @@ var r = require('@ebay/retriever');
 
 // set optional logger for missing data or type mismatch with defaultValue
 r.setLogger({
-    debug: function (messageFormat, eventType, lookupPath, defaultValue) {}, // used with get() and has()
-    warn: function (messageFormat, eventType, lookupPath, defaultValue) {} // used with need()
+    warn: function (message) {} // used with need(), or with truthy last param with get() and has()
 });
 
 // sample data where content is not guaranteed
@@ -54,7 +53,8 @@ var hasContent = r.has(input, 'model.content'); // false
 // type of defaultValue must match type of data, otherwise will log
 var count = r.need(input, 'model.count', 50); // 20 (from object)
 var count = r.need(input, 'model.count', '50'); // '50' (from defaultValue), logs `warning`
-var count = r.get(input, 'model.count', '50'); // '50' (from defaultValue), logs `debug`
+var count = r.get(input, 'model.count', '50', true); // '50' (from defaultValue), logs `warning`
+var count = r.get(input, 'model.count', '50'); // '50' (from defaultValue), will not log
 
 // defaults to defaultValue when data is missing or of mismatched type
 var list = r.need(input, 'model.missingProperty', []); // [] (from defaultValue)
@@ -74,51 +74,50 @@ var enabled = r.get(input, 'model.enabled', true); // true (from defaultValue)
 ## API
 
 ### `need(object, path, [defaultValue])`
-### `get(object, path, [defaultValue])`
+### `get(object, path, [defaultValue], [shouldWarn])`
 
 Gets the value at path of object. Uses Lodash's [get](https://lodash.com/docs#get) method. If the resolved value is `undefined `or if there is a type mismatch between the resolved value and default value, the `defaultValue` is returned in its place. If the `defaultValue` is an empty object, an object with an internal helper `__isEmpty` property is returned in its place. A type mismatch is determined with strict type checking that differentiates between `object`, `array`, and `null`. This is opposed to the native `typeof` which treats those identically as being type `object`.
 
 `need()` assumes that the data of the specified type needs to be present. Otherwise, it will log a warning.
-`get()` is more lenient, and will only log `debug` instead of `warn`.
+`get()` is more lenient, and will only log a warning if `shouldWarn` resolve to truthy.
 
 **Arguments**
 
 - `object` (Object): The object to query.
 - `path` (Array | String): The path of the property to get.
 - `[defaultValue]` (*): The value returned for undefined resolved values. (defaults to '')
+- `[shouldWarn]` (Boolean): When this is truthy and used with `get()`, it will log warnings as needed.
 
 **Returns**
 
 (*): Returns the resolved value.
 
-### `has(object, path)`
+### `has(object, path, [shouldWarn])`
 
 Checks if path is a direct property of object, and has a value that is not null or undefined.
-This will log `debug` if the data is missing.
+This will log `warn` if the data is missing and `shouldWarn` is truthy.
 
 **Arguments**
 
 - `object` (Object): The object to query.
 - `path` (Array | String): The path of the check.
+- `[shouldWarn]` (Boolean): When this is truthy, it will log warnings as needed.
 
 **Returns**
 
 *(boolean)*: Returns `true` if path exists, else `false`.
 
-### `setLogger(logger)`
+### `startLogging(logger)`
 
 Sets the logger to be used for logging any issues in retrieving the data. If logging is desired, this should be called once at the start of the app to be used for all subsequent usage. If `retriever` logging is desired on the client, `setLogger` must be initialized in the browser as well. If you are using this with other logging libraries, you'll need to ensure that the logging is enabled per those environment settings.
 
 **Arguments**
 
-- `logger` (Object): A logger object containing the functions `debug` and `warn`. These functions will be called with the following parameters:
-`messageFormat`, `eventType`, `lookupPath`, `defaultValue`.
+- `logger` (Object): A logger object containing a `warn` function. This function will be called with the `message` paramter. For example, a type mismatch warning, might look like this: `'event: typeMismatch, path: data.path[0], default: ''`
 
-For example, a type mismatch warning, the parameters might look like this:
-- `messageFormat`: `'event: %s, path: %s, default: %s'`
-- `eventType`: `'typeMismatch'`
-- `lookupPath`: `'data.path[0]'`
-- `default`: `''`
+### `endLogging
+
+This should be called when you want to end the log collection, and flush the data. This will make 2 calls to the supplied `logger.warn` function. The first will contain aggregated statistics of the warnings, while the second will contain the individual warnings themselves.
 
 ## Similar Projects
 - [Lodash get()](https://lodash.com/docs/#get)
