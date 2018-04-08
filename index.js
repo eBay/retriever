@@ -1,5 +1,3 @@
-'use strict';
-
 var _get = require('lodash.get');
 
 var isArray = Array.isArray;
@@ -8,14 +6,13 @@ var EVENT_TYPES = {
     TYPE_MISMATCH: 'typeMismatch'
 };
 var logger;
-var logging = false;
 var logs = [];
 var stats = {};
 
 /**
  * Determine if an object is empty
  * Copied from lodash.isEmpty, but optimized to only handle objects
- * @param obj - object to check
+ * @param {Object} obj - object to check
  */
 function isEmpty(obj) {
     for (var key in obj) {
@@ -28,7 +25,7 @@ function isEmpty(obj) {
 
 /**
  * Get `typeof`, but with stricter checking for array and null
- * @param val - value of which to check type
+ * @param {*} val - value of which to check type
  */
 function getType(val) {
     var type;
@@ -45,25 +42,13 @@ function getType(val) {
 }
 
 /**
- * Log event
- * @param path - a string representation of the lookup
- * @param eventType - event type from EVENT_TYPES enum
- * @param defaultValue - default when data is absent, also used to check type
- * @param logType - logger method to use
- */
-function log(eventType, path, defaultValue) {
-    logs.push('event: ' + eventType + ', path: ' + path + ', default: ' + defaultValue);
-    stats[eventType]++;
-}
-
-/**
  * Attempt to get object path, otherwise use defaultValue
- * @param object - the object where we are extracting data
- * @param path - a string representation of the lookup
- * @param defaultValue - default when data is absent, also used to check type
- * @param logType - logger method to use
+ * @param {Object} object - the object where we are extracting data
+ * @param {String} path - a string representation of the lookup
+ * @param {String} defaultValue - default when data is absent, also used to check type
+ * @param {Boolean} shouldLog - must be truthy to log
  */
-function access(object, path, defaultValue, shouldWarn) {
+function access(object, path, defaultValue, shouldLog) {
     var eventType;
     var result = _get(object, path);
     var typeofResult = getType(result);
@@ -73,7 +58,7 @@ function access(object, path, defaultValue, shouldWarn) {
         defaultValue = '';
         typeofDefaultValue = 'string';
     } else if (typeofDefaultValue === 'object' && isEmpty(defaultValue)) {
-        defaultValue = {__isEmpty: true};
+        defaultValue = { __isEmpty: true };
     }
 
     if (typeofResult !== 'undefined') {
@@ -86,7 +71,7 @@ function access(object, path, defaultValue, shouldWarn) {
         result = defaultValue;
     }
 
-    if (eventType && logging && shouldWarn) {
+    if (eventType && logger && shouldLog) {
         log(eventType, path, defaultValue);
     }
 
@@ -97,22 +82,22 @@ function need(object, path, defaultValue) {
     return access(object, path, defaultValue, true);
 }
 
-function get(object, path, defaultValue, shouldWarn) {
-    return access(object, path, defaultValue, shouldWarn);
+function get(object, path, defaultValue, shouldLog) {
+    return access(object, path, defaultValue, shouldLog);
 }
 
 /**
  * Return whether given object has path with value that is not null or undefined
- * @param object - the object where we are extracting data
- * @param path - a string representation of the lookup
+ * @param {Object} object - the object where we are extracting data
+ * @param {String} path - a string representation of the lookup
  */
-function has(object, path, shouldWarn) {
+function has(object, path, shouldLog) {
     var result = _get(object, path);
     var typeofResult = getType(result);
 
     result = !(typeofResult === 'undefined' || typeofResult === 'null');
 
-    if (!result && logging && shouldWarn) {
+    if (!result && logger && shouldLog) {
         log(EVENT_TYPES.DATA_MISSING, path, false);
     }
 
@@ -120,36 +105,58 @@ function has(object, path, shouldWarn) {
 }
 
 /**
- * Set logger to be used for all future usage
- * @param object l - the logger with a warn function
+ * Log event
+ * @param {String} path - a string representation of the lookup
+ * @param {String} eventType - event type from EVENT_TYPES enum
+ * @param {*} defaultValue - default when data is absent, also used to check type
  */
-function startLogging(l) {
-    if (l && l.warn) {
+function log(eventType, path, defaultValue) {
+    logs.push('event: ' + eventType + ', path: ' + path + ', default: ' + defaultValue);
+    stats[eventType]++;
+}
+
+/**
+ * Set logger for all usage
+ * @param {Function} l - the logger function
+ */
+function setLogger(l) {
+    if (typeof l === 'function') {
         logger = l;
-        logging = true;
-        logs = [];
-        stats.dataMissing = 0;
-        stats.typeMismatch = 0;
+        resetLogs();
     }
 }
 
-function endLogging() {
-    if (logger && logger.warn && logs.length) {
-        logging = false;
+/**
+ * Flush current logs, and reset log storage
+ * @param {Boolean} logStatsOnly - does not log individual logs when truthy
+ */
+function flushLogs(logStatsOnly) {
+    if (typeof logger === 'function' && logs.length) {
         var dataMissing = stats.dataMissing;
         var typeMismatch = stats.typeMismatch;
         var total = dataMissing + typeMismatch;
-        logger.warn('Warnings: ' + total + ', dataMissing: ' + dataMissing + ', typeMismatch: ' + typeMismatch);
-        logger.warn(logs.join('\n'));
+
+        logger('Warnings: ' + total + ', dataMissing: ' + dataMissing + ', typeMismatch: ' + typeMismatch);
+
+        if (!logStatsOnly) {
+            logger(logs.join('\n'));
+        }
+
+        resetLogs();
     }
+}
+
+function resetLogs() {
+    logs = [];
+    stats = { dataMissing: 0, typeMismatch: 0 };
 }
 
 module.exports = {
     need: need,
     get: get,
     has: has,
-    startLogging: startLogging,
-    endLogging: endLogging
+    setLogger: setLogger,
+    flushLogs: flushLogs
 };
 
 module.exports.privates = {

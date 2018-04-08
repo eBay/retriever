@@ -1,10 +1,8 @@
-'use strict';
+/* eslint-disable no-console, no-labels */
 
 var r = require('../');
 
-r.startLogging({
-    warn: function () {}
-});
+r.setLogger(function () {});
 
 function buildPath(char, count) {
     return Array.apply(null, Array(count)).map(function (item, idx) {
@@ -29,7 +27,7 @@ function buildObject(breadth, depth, type) {
     var typeValues = {
         string: 'string value',
         array: [0, 1, 2],
-        object: {a: 1}
+        object: { a: 1 }
     };
     var obj = {};
     var count;
@@ -107,9 +105,9 @@ types.forEach(function (type) {
 });
 
 var objectVariations = [
-    {breadth: 500, depth: 25},
-    {breadth: 200, depth: 10},
-    {breadth: 10, depth: 5}
+    { breadth: 500, depth: 25 },
+    { breadth: 200, depth: 10 },
+    { breadth: 10, depth: 5 }
 ];
 
 ['need', 'get'].forEach(function (accessor) {
@@ -134,5 +132,5 @@ var objectVariations = [
     });
 });
 
-r.endLogging();
+r.flushLogs();
 process.exit();
