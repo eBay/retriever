@@ -6,9 +6,10 @@
   "scripts": {
     "lint": "eslint *.js **/*.js",
     "test": "istanbul cover _mocha test/index.js && node test/perf.js",
-    "build": "npm run lint && npm test",
+    "build": "yarn run lint && yarn test",
     "rep": "open coverage/lcov-report/index.html",
-    "all": "npm run lint && npm test && npm run rep"
+    "all": "yarn run lint && yarn test && yarn run rep",
+    "wrap": "rm -rf node_modules; rm yarn.lock; yarn cache clean && yarn"
   },
   "repository": {
     "type": "git",

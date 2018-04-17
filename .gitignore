@@ -1,2 +1,9 @@
+.*
+!.eslintrc.json
+!.gitignore
+!.travis.yml
+
+*.log
+
 node_modules
 coverage
