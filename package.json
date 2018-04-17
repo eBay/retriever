@@ -8,7 +8,8 @@
     "test": "istanbul cover _mocha test/index.js && node test/perf.js",
     "build": "npm run lint && npm test",
     "rep": "open coverage/lcov-report/index.html",
-    "all": "npm run lint && npm test && npm run rep"
+    "all": "npm run lint && npm test && npm run rep",
+    "wrap": "rm -rf node_modules; rm yarn.lock; yarn cache clean && yarn"
   },
   "repository": {
     "type": "git",
