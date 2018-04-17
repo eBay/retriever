@@ -138,5 +138,3 @@ var objectVariations = [
 });
 
 process.exit();
-
-/* eslint-enable no-console */
