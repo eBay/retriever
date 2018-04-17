@@ -1,6 +1,6 @@
 {
   "name": "@ebay/retriever",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "retrieve nested data safely",
   "main": "index.js",
   "scripts": {
