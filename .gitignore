@@ -1,2 +1,9 @@
+.*
+!.eslintrc.json
+!.gitignore
+!.travis.yml
+
+yarn-error.log
+
 node_modules
 coverage
