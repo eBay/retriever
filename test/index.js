@@ -112,31 +112,26 @@ describe('has()', function () {
 });
 
 describe('logging', function () {
-    ['need', 'get', 'has'].forEach(function (accessor) {
-        [
-            {lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING},
-            {lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH}
-        ].forEach(function (scenario) {
-            // skip typeMismatch scenario for has()
-            if (!(accessor === 'has' && scenario.event === EVENT_TYPES.TYPE_MISMATCH)) {
-                it('logs ' + scenario.event + ' with ' + accessor + '() using supplied logger', function (done) {
-                    var log = function (message, eventType) {
-                        expect(eventType).to.equal(scenario.event);
-                        done();
-                    };
-                    var spy = chai.spy(log);
-                    var logType = (accessor === 'need') ? 'warn' : 'debug';
-                    var mockLogger = {};
-                    mockLogger[logType] = spy;
+    [
+        {lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING},
+        {lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH}
+    ].forEach(function (scenario) {
+        it('logs ' + scenario.event + ' with need() using supplied logger', function (done) {
+            var log = function (message, eventType) {
+                expect(eventType).to.equal(scenario.event);
+                done();
+            };
+            var spy = chai.spy(log);
+            var logType = 'warn';
+            var mockLogger = {};
+            mockLogger[logType] = spy;
 
-                    r.setLogger();
-                    r[accessor](basicObject, scenario.lookup);
-                    expect(spy).not.to.have.been.called();
+            r.setLogger();
+            r.need(basicObject, scenario.lookup);
+            expect(spy).not.to.have.been.called();
 
-                    r.setLogger(mockLogger);
-                    r[accessor](basicObject, scenario.lookup);
-                });
-            }
+            r.setLogger(mockLogger);
+            r.need(basicObject, scenario.lookup);
         });
     });
 });

@@ -96,7 +96,7 @@ function need(object, path, defaultValue) {
 }
 
 function get(object, path, defaultValue) {
-    return access(object, path, defaultValue, 'debug');
+    return access(object, path, defaultValue);
 }
 
 /**
@@ -109,10 +109,6 @@ function has(object, path) {
     var typeofResult = getType(result);
 
     result = !(typeofResult === 'undefined' || typeofResult === 'null');
-
-    if (logger && !result) {
-        log(EVENT_TYPES.DATA_MISSING, path, false, 'debug');
-    }
 
     return result;
 }
