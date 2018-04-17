@@ -84,7 +84,7 @@ function access(object, path, defaultValue, logType) {
         result = defaultValue;
     }
 
-    if (logger && eventType) {
+    if (logger && logType && eventType) {
         log(eventType, path, defaultValue, logType);
     }
 
