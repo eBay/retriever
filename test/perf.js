@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 'use strict';
 
 var r = require('../');
@@ -136,3 +138,5 @@ var objectVariations = [
 });
 
 process.exit();
+
+/* eslint-enable no-console */
