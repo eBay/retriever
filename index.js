@@ -115,7 +115,7 @@ function has(object, path) {
 
 /**
  * Set logger to be used for all future usage
- * @param object l - the logger with debug and warn functions
+ * @param object l - the logger with a warn function
  */
 function setLogger(l) {
     logger = l;

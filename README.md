@@ -18,7 +18,6 @@ var r = require('@ebay/retriever');
 
 // set optional logger for missing data or type mismatch with defaultValue
 r.setLogger({
-    debug: function (messageFormat, eventType, lookupPath, defaultValue) {}, // used with get() and has()
     warn: function (messageFormat, eventType, lookupPath, defaultValue) {} // used with need()
 });
 
@@ -54,7 +53,7 @@ var hasContent = r.has(input, 'model.content'); // false
 // type of defaultValue must match type of data, otherwise will log
 var count = r.need(input, 'model.count', 50); // 20 (from object)
 var count = r.need(input, 'model.count', '50'); // '50' (from defaultValue), logs `warning`
-var count = r.get(input, 'model.count', '50'); // '50' (from defaultValue), logs `debug`
+var count = r.get(input, 'model.count', '50'); // '50' (from defaultValue), does not log
 
 // defaults to defaultValue when data is missing or of mismatched type
 var list = r.need(input, 'model.missingProperty', []); // [] (from defaultValue)
@@ -79,7 +78,7 @@ var enabled = r.get(input, 'model.enabled', true); // true (from defaultValue)
 Gets the value at path of object. Uses Lodash's [get](https://lodash.com/docs#get) method. If the resolved value is `undefined `or if there is a type mismatch between the resolved value and default value, the `defaultValue` is returned in its place. If the `defaultValue` is an empty object, an object with an internal helper `__isEmpty` property is returned in its place. A type mismatch is determined with strict type checking that differentiates between `object`, `array`, and `null`. This is opposed to the native `typeof` which treats those identically as being type `object`.
 
 `need()` assumes that the data of the specified type needs to be present. Otherwise, it will log a warning.
-`get()` is more lenient, and will only log `debug` instead of `warn`.
+`get()` is more lenient, and will not log a warning.
 
 **Arguments**
 
@@ -94,7 +93,6 @@ Gets the value at path of object. Uses Lodash's [get](https://lodash.com/docs#ge
 ### `has(object, path)`
 
 Checks if path is a direct property of object, and has a value that is not null or undefined.
-This will log `debug` if the data is missing.
 
 **Arguments**
 
@@ -111,7 +109,7 @@ Sets the logger to be used for logging any issues in retrieving the data. If log
 
 **Arguments**
 
-- `logger` (Object): A logger object containing the functions `debug` and `warn`. These functions will be called with the following parameters:
+- `logger` (Object): A logger object containing the function `warn`. This function will be called with the following parameters:
 `messageFormat`, `eventType`, `lookupPath`, `defaultValue`.
 
 For example, a type mismatch warning, the parameters might look like this:
