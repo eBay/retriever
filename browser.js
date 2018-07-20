@@ -1,16 +1,14 @@
 'use strict';
 /* **
  * @description A client side port of `@ebay/retriever`
- * sans the dependency of `lodash.get` & `lodash.memoize`
+ * without the dependency of `lodash.get` & `lodash.memoize`
  */
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var EVENT_TYPES = {
     DATA_MISSING: 'dataMissing',
     TYPE_MISMATCH: 'typeMismatch'
 };
-var logger = void 0;
+var logger;
 
 /**
  * Checks if an object is truly empty
@@ -18,7 +16,7 @@ var logger = void 0;
  * @returns {Boolean}
  */
 function isEmpty(obj) {
-    return Object.entries(obj).length === 0;
+    return (Object.entries(obj).length === 0);
 }
 
 /**
@@ -27,13 +25,13 @@ function isEmpty(obj) {
  * @returns {*} type
  */
 function getType(val) {
-    var type = void 0;
+    var type;
     if (Array.isArray(val)) {
         type = 'array';
     } else if (val === null) {
         type = 'null';
     } else {
-        type = typeof val === 'undefined' ? 'undefined' : _typeof(val);
+        type = typeof val;
     }
     return type;
 }
@@ -87,10 +85,9 @@ function claw(obj, path) {
  * @param {String} logType - WARN | INFO | DEBUG | ERROR | LOG
  * @returns {*} result
  */
-function access(obj, path, defaultVal) {
-    var logType = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'warn';
-
-    var eventType = void 0;
+function access(obj, path, defaultVal, logType) {
+    logType = logType || 'warn';
+    var eventType;
     path = normalize(path);
     var result = claw(obj, path);
     var typeofResult = getType(result);
