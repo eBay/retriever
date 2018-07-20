@@ -22,7 +22,7 @@
   "author": "Yoni Medoff",
   "license": "MIT",
   "browser": {
-    "@ebay/retriever": "./src/utils/claw/index.js"
+    "@ebay/retriever": "./browser.js"
   },
   "dependencies": {
     "lodash.get": "^4.4.2"
