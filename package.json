@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint *.js **/*.js",
-    "test": "istanbul cover _mocha test/index.js && node test/perf.js",
+    "test": "istanbul cover _mocha test/index-server.js test/index-browser.js && node test/perf-server.js && node test/perf-browser.js",
     "build": "yarn run lint && yarn test",
     "rep": "open coverage/lcov-report/index.html",
     "all": "yarn run lint && yarn test && yarn run rep",
@@ -21,6 +21,9 @@
   ],
   "author": "Yoni Medoff",
   "license": "MIT",
+  "browser": {
+    "@ebay/retriever": "./browser.js"
+  },
   "dependencies": {
     "lodash.get": "^4.4.2"
   },
