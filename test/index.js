@@ -112,26 +112,69 @@ describe('has()', function () {
 });
 
 describe('logging', function () {
-    [
+    var scenarios = [
         {lookup: 'missingKey', event: EVENT_TYPES.DATA_MISSING},
         {lookup: 'a', event: EVENT_TYPES.TYPE_MISMATCH}
-    ].forEach(function (scenario) {
-        it('logs ' + scenario.event + ' with need() using supplied logger', function (done) {
+    ];
+
+    it('doesn\'t log when logger isn\'t set', function () {
+        var spy = chai.spy();
+        var mockLogger = {
+            logType: spy
+        };
+        r.setLogger(mockLogger);
+
+        ['need', 'get'].forEach(function (accessor) {
+            scenarios.forEach(function (scenario) {
+                r[accessor](basicObject, scenario.lookup);
+                expect(spy).not.to.have.been.called();
+            });
+        });
+    });
+
+    it('need() always logs', function () {
+        scenarios.forEach(function (scenario) {
             var log = function (message, eventType) {
                 expect(eventType).to.equal(scenario.event);
-                done();
             };
-            var spy = chai.spy(log);
-            var logType = 'warn';
-            var mockLogger = {};
-            mockLogger[logType] = spy;
-
-            r.setLogger();
-            r.need(basicObject, scenario.lookup);
-            expect(spy).not.to.have.been.called();
-
+            var mockLogger = {
+                warn: chai.spy(log)
+            };
             r.setLogger(mockLogger);
+
             r.need(basicObject, scenario.lookup);
         });
+    });
+
+    it('get() logs conditionally', function () {
+        scenarios.forEach(function (scenario) {
+            var log = function (message, eventType) {
+                expect(eventType).to.equal(scenario.event);
+            };
+            var spy = chai.spy(log);
+            var mockLogger = {
+                debug: spy
+            };
+            r.setLogger(mockLogger);
+
+            r.get(basicObject, scenario.lookup);
+            expect(spy).not.to.have.been.called();
+
+            r.get(basicObject, scenario.lookup, '', true);
+        });
+    });
+
+    it('has() logs conditionally', function () {
+        var spy = chai.spy();
+        var mockLogger = {
+            debug: spy
+        };
+        r.setLogger(mockLogger);
+
+        r.has(basicObject, scenarios[0].lookup, false);
+        expect(spy).not.to.have.been.called();
+
+        r.has(basicObject, scenarios[0].lookup, true);
+        expect(spy).to.have.been.called();
     });
 });

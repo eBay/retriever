@@ -59,32 +59,40 @@ function log(eventType, path, defaultValue, logType) {
  * @param object - the object where we are extracting data
  * @param path - a string representation of the lookup
  * @param defaultValue - default when data is absent, also used to check type
- * @param logType - logger method to use
+ * @param shouldLog - whether to log or not
+ * @param logType - set to `debug` or `warn`
+ * @param shouldCheckIfExistsOnly - whether to check if the property exists only or not
  */
-function access(object, path, defaultValue, logType) {
+function access(object, path, defaultValue, shouldLog, logType, shouldCheckIfExistsOnly) {
     var eventType;
     var result = _get(object, path);
     var typeofResult = getType(result);
     var typeofDefaultValue = getType(defaultValue);
 
-    if (typeofDefaultValue === 'undefined') {
-        defaultValue = '';
-        typeofDefaultValue = 'string';
-    } else if (typeofDefaultValue === 'object' && isEmpty(defaultValue)) {
-        defaultValue = {__isEmpty: true};
-    }
+    if (shouldCheckIfExistsOnly) {
+        eventType = true;
+        result = !(typeofResult === 'undefined' || typeofResult === 'null');
+    } else {
+        typeofDefaultValue = getType(defaultValue);
+        if (typeofDefaultValue === 'undefined') {
+            defaultValue = '';
+            typeofDefaultValue = 'string';
+        } else if (typeofDefaultValue === 'object' && isEmpty(defaultValue)) {
+            defaultValue = {__isEmpty: true};
+        }
 
-    if (typeofResult !== 'undefined') {
-        if (typeofResult !== typeofDefaultValue) {
-            eventType = EVENT_TYPES.TYPE_MISMATCH;
+        if (typeofResult !== 'undefined') {
+            if (typeofResult !== typeofDefaultValue) {
+                eventType = EVENT_TYPES.TYPE_MISMATCH;
+                result = defaultValue;
+            }
+        } else {
+            eventType = EVENT_TYPES.DATA_MISSING;
             result = defaultValue;
         }
-    } else {
-        eventType = EVENT_TYPES.DATA_MISSING;
-        result = defaultValue;
     }
 
-    if (logger && logType && eventType) {
+    if (logger && shouldLog && eventType) {
         log(eventType, path, defaultValue, logType);
     }
 
@@ -92,30 +100,20 @@ function access(object, path, defaultValue, logType) {
 }
 
 function need(object, path, defaultValue) {
-    return access(object, path, defaultValue, 'warn');
+    return access(object, path, defaultValue, true, 'warn', false);
 }
 
-function get(object, path, defaultValue) {
-    return access(object, path, defaultValue);
+function get(object, path, defaultValue, shouldLog) {
+    return access(object, path, defaultValue, shouldLog, 'debug', false);
 }
 
-/**
- * Return whether given object has path with value that is not null or undefined
- * @param object - the object where we are extracting data
- * @param path - a string representation of the lookup
- */
-function has(object, path) {
-    var result = _get(object, path);
-    var typeofResult = getType(result);
-
-    result = !(typeofResult === 'undefined' || typeofResult === 'null');
-
-    return result;
+function has(object, path, shouldLog) {
+    return access(object, path, '', shouldLog, 'debug', true);
 }
 
 /**
  * Set logger to be used for all future usage
- * @param object l - the logger with a warn function
+ * @param object l - the logger with debug and warn functions
  */
 function setLogger(l) {
     logger = l;
