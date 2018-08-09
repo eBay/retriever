@@ -5,6 +5,7 @@
 var r = require('../');
 
 r.setLogger({
+    debug: function () {},
     warn: function () {}
 });
 
