@@ -23,7 +23,7 @@ var r = require('@ebay/retriever');
 
 // set optional logger for missing data or type mismatch with defaultValue
 r.setLogger({
-    debug: function (messageFormat, eventType, lookupPath, defaultValue) {}, // used with get()
+    debug: function (messageFormat, eventType, lookupPath, defaultValue) {}, // used with get() and has()
     warn: function (messageFormat, eventType, lookupPath, defaultValue) {} // used with need()
 });
 
