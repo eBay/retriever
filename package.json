@@ -9,7 +9,11 @@
     "build": "yarn run lint && yarn test",
     "rep": "open coverage/lcov-report/index.html",
     "all": "yarn run lint && yarn test && yarn run rep",
-    "wrap": "rm -rf node_modules; rm yarn.lock; yarn cache clean && yarn"
+    "wrap": "rm -rf node_modules; rm yarn.lock; yarn cache clean && yarn",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": ["eslint --fix", "git add"]
   },
   "repository": {
     "type": "git",
@@ -29,7 +33,9 @@
     "chai-spies": "^0.7.1",
     "eslint": "^3.19.0",
     "eslint-config-ebay": "^0.1.4",
+    "husky": "^0.14.3",
     "istanbul": "^0.4.5",
+    "lint-staged": "^7.2.0",
     "mocha": "^3.3.0"
   }
 }
