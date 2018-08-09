@@ -92,7 +92,7 @@ Gets the value at path of object. Uses Lodash's [get](https://lodash.com/docs#ge
 - `object` (Object): The object to query.
 - `path` (Array | String): The path of the property to get.
 - `[defaultValue]` (*): The value returned for undefined resolved values. (defaults to '')
-- `shouldLog` (boolean): `get()` logs `debug` when set to `true` (default `false`)
+- `shouldLog` (boolean): `get()` logs `debug` when set to `true`
 
 **Returns**
 
