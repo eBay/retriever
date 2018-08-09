@@ -163,4 +163,18 @@ describe('logging', function () {
             r.get(basicObject, scenario.lookup, '', true);
         });
     });
+
+    it('has() logs conditionally', function () {
+        var spy = chai.spy();
+        var mockLogger = {
+            debug: spy
+        };
+        r.setLogger(mockLogger);
+
+        r.has(basicObject, scenarios[0].lookup, false);
+        expect(spy).not.to.have.been.called();
+
+        r.has(basicObject, scenarios[0].lookup, true);
+        expect(spy).to.have.been.called();
+    });
 });
