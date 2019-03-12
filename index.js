@@ -1,6 +1,6 @@
 'use strict';
 
-var _get = require('lodash.get');
+var _get = require('@ebay/nodash/get');
 
 var logger;
 var isArray = Array.isArray;

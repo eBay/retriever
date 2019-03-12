@@ -22,7 +22,7 @@
   "author": "Yoni Medoff",
   "license": "MIT",
   "dependencies": {
-    "lodash.get": "^4.4.2"
+    "@ebay/nodash": "^1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
