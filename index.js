@@ -1,9 +1,6 @@
 'use strict';
 
-var _get = require('lodash.get');
-
 var logger;
-var isArray = Array.isArray;
 var EVENT_TYPES = {
     DATA_MISSING: 'dataMissing',
     TYPE_MISMATCH: 'typeMismatch'
@@ -28,87 +25,111 @@ function isEmpty(obj) {
  * @param val - value of which to check type
  */
 function getType(val) {
-    var type;
-
-    if (isArray(val)) {
-        type = 'array';
-    } else if (val === null) {
-        type = 'null';
-    } else {
-        type = typeof val;
-    }
-
-    return type;
+    return toString.call(val).slice(8, -1);
 }
 
 /**
  * Log event
  * @param path - a string representation of the lookup
  * @param eventType - event type from EVENT_TYPES enum
- * @param defaultValue - default when data is absent, also used to check type
+ * @param defaultResult - default when data is absent, also used to check type
  * @param logType - logger method to use
  */
-function log(eventType, path, defaultValue, logType) {
+function log(eventType, path, defaultResult, logType) {
     if (logger[logType]) {
-        logger[logType]('event: %s, path: %s, default: %s', eventType, path, defaultValue);
+        logger[logType]('event: %s, path: %s, default: %s', eventType, path, defaultResult);
     }
 }
 
 /**
- * Attempt to get object path, otherwise use defaultValue
- * @param object - the object where we are extracting data
+ * Attempt to get object path
+ * @param obj - the object where we are extracting data
  * @param path - a string representation of the lookup
- * @param defaultValue - default when data is absent, also used to check type
- * @param logType - logger method to use
  */
-function access(object, path, defaultValue, logType) {
-    var eventType;
-    var result = _get(object, path);
-    var typeofResult = getType(result);
-    var typeofDefaultValue = getType(defaultValue);
+function getResult(obj, path) {
+    var lastIndex = 0;
+    var index;
+    var len = path.length;
+    var cur = obj;
 
-    if (typeofDefaultValue === 'undefined') {
-        defaultValue = '';
-        typeofDefaultValue = 'string';
-    } else if (typeofDefaultValue === 'object' && isEmpty(defaultValue)) {
-        defaultValue = {__isEmpty: true};
+    // transform array syntax to use dot delimeters for easier parsing
+    if (path.indexOf('[') !== -1) {
+        path = path.replace(/\[/g, '.').replace(/\]/g, '');
     }
 
-    if (typeofResult !== 'undefined') {
-        if (typeofResult !== typeofDefaultValue) {
+    do {
+        if (cur == null) { // eslint-disable-line eqeqeq
+            return;
+        }
+
+        index = path.indexOf('.', lastIndex);
+        if (index === -1) {
+            index = len;
+        }
+
+        cur = cur[path.slice(lastIndex, index)];
+        lastIndex = index + 1;
+    } while (lastIndex < len);
+
+    return cur;
+}
+
+/**
+ * Attempt to get object path, otherwise use defaultResult
+ * @param obj - the object where we are extracting data
+ * @param path - a string representation of the lookup
+ * @param defaultResult - default when data is absent, also used to check type
+ * @param logType - logger method to use
+ */
+function access(obj, path, defaultResult, logType) {
+    var eventType;
+    var result = getResult(obj, path);
+
+    var typeofResult = getType(result);
+    var typeofDefaultResult = getType(defaultResult);
+
+    if (typeofDefaultResult === 'Undefined') {
+        defaultResult = '';
+        typeofDefaultResult = 'String';
+    } else if (typeofDefaultResult === 'Object' && isEmpty(defaultResult)) {
+        defaultResult = {__isEmpty: true};
+    }
+
+    if (typeofResult !== 'Undefined') {
+        if (typeofResult !== typeofDefaultResult) {
             eventType = EVENT_TYPES.TYPE_MISMATCH;
-            result = defaultValue;
+            result = defaultResult;
         }
     } else {
         eventType = EVENT_TYPES.DATA_MISSING;
-        result = defaultValue;
+        result = defaultResult;
     }
 
     if (logger && logType && eventType) {
-        log(eventType, path, defaultValue, logType);
+        log(eventType, path, defaultResult, logType);
     }
 
     return result;
 }
 
-function need(object, path, defaultValue) {
-    return access(object, path, defaultValue, 'warn');
+function need(obj, path, defaultResult) {
+    return access(obj, path, defaultResult, 'warn');
 }
 
-function get(object, path, defaultValue) {
-    return access(object, path, defaultValue);
+function get(obj, path, defaultResult) {
+    return access(obj, path, defaultResult);
 }
 
 /**
  * Return whether given object has path with value that is not null or undefined
- * @param object - the object where we are extracting data
+ * @param obj - the object where we are extracting data
  * @param path - a string representation of the lookup
  */
-function has(object, path) {
-    var result = _get(object, path);
+function has(obj, path) {
+    var result = getResult(obj, path);
     var typeofResult = getType(result);
 
-    result = !(typeofResult === 'undefined' || typeofResult === 'null');
+    result = !(typeofResult === 'Undefined' || typeofResult === 'Null');
 
     return result;
 }
