@@ -49,7 +49,7 @@ function buildObject(breadth, depth, type) {
     return obj;
 }
 
-function retrieverLoop(accessor, breadth, depth, calls, obj, paths, defaultValue, useWrongPath) {
+function retrieverLoop(accessor, breadth, depth, calls, obj, paths, defaultResult, useWrongPath) {
     var callsDone = 0;
     // keep repeating the breadth loop as necessary
     while (callsDone < calls) {
@@ -62,7 +62,7 @@ function retrieverLoop(accessor, breadth, depth, calls, obj, paths, defaultValue
                 if (useWrongPath) {
                     path += 'asdf'; // e.g. look for .stringasdf instead of .string
                 }
-                r[accessor](obj, path, defaultValue);
+                r[accessor](obj, path, defaultResult);
 
                 // stop breadth loop early when we hit the calls number
                 if (++callsDone >= calls) {
@@ -85,7 +85,7 @@ types.forEach(function (type) {
     scenarios.push({
         name: 'access ' + type,
         type: type,
-        defaultValue: defaults[type],
+        defaultResult: defaults[type],
         useWrongPath: false
     });
 });
@@ -94,7 +94,7 @@ types.forEach(function (type) {
     scenarios.push({
         name: 'access ' + type + ' with wrong default',
         type: type,
-        defaultValue: null, // takes advantage of `null` being its own type in retriever
+        defaultResult: null, // takes advantage of `null` being its own type in retriever
         useWrongPath: false
     });
 });
@@ -103,7 +103,7 @@ types.forEach(function (type) {
     scenarios.push({
         name: 'access ' + type + ' with wrong path',
         type: type,
-        defaultValue: defaults[type],
+        defaultResult: defaults[type],
         useWrongPath: true
     });
 });
@@ -123,14 +123,14 @@ var objectVariations = [
             var breadth = objectVariation.breadth;
             var depth = objectVariation.depth;
             var type = scenario.type;
-            var defaultValue = scenario.defaultValue;
+            var defaultResult = scenario.defaultResult;
             var useWrongPath = scenario.useWrongPath;
             var label = 'calls:' + calls + ', breadth:' + breadth + ', depth:' + depth;
             var obj = buildObject(breadth, depth, type);
             var paths = buildPaths(breadth, depth, type);
 
             console.time(label);
-            retrieverLoop(accessor, breadth, depth, calls, obj, paths, defaultValue, useWrongPath);
+            retrieverLoop(accessor, breadth, depth, calls, obj, paths, defaultResult, useWrongPath);
             console.timeEnd(label);
         });
     });

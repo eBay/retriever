@@ -24,6 +24,9 @@ var objectWithArrays = {
             {
                 c: 'test'
             }
+        ],
+        d: [
+            [1, 2, 3]
         ]
     }
 };
@@ -37,9 +40,17 @@ var emptyObjectWithPrototype = Object.create({prototypeProperty: 1});
             var value = r[accessor](basicObject, 'a.b.c', 1);
             expect(value).to.equal(0);
         });
-        it('accesses array elements', function () {
+        it('accesses array elements at end of path', function () {
+            var value = r[accessor](objectWithArrays, 'a.b[0]', {});
+            expect(value).to.equal(objectWithArrays.a.b[0]);
+        });
+        it('accesses array elements in middle of path', function () {
             var value = r[accessor](objectWithArrays, 'a.b[0].c');
             expect(value).to.equal(objectWithArrays.a.b[0].c);
+        });
+        it('accesses nested arrray elements', function () {
+            var value = r[accessor](objectWithArrays, 'a.d[0][1]', 1);
+            expect(value).to.equal(objectWithArrays.a.d[0][1]);
         });
         it('gets object value for basic object', function () {
             var value = r[accessor](basicObject, 'a.b', {});
@@ -52,6 +63,10 @@ var emptyObjectWithPrototype = Object.create({prototypeProperty: 1});
         it('uses default value when path doesn\'t exist', function () {
             var value = r[accessor](basicObject, 'a.b.d', 'default');
             expect(value).to.equal('default');
+        });
+        it('safely handles missing results in middle of path', function () {
+            var value = r[accessor](basicObject, 'a.asdf[1][2]', null);
+            expect(value).to.equal(null);
         });
         it('assumes default empty string when not passed in', function () {
             var value = r[accessor](basicObject, 'a.b.d');
@@ -73,7 +88,7 @@ var emptyObjectWithPrototype = Object.create({prototypeProperty: 1});
             var value = r[accessor](basicObject, 'a.b.d', emptyObjectWithPrototype);
             expect(value).to.deep.equal(defaultEmptyObject);
         });
-        it('defaults to defaultValue when result is undefined', function () {
+        it('defaults to defaultResult when result is undefined', function () {
             var value = r[accessor](basicObject, 'a.b.e', 'default');
             expect(value).to.deep.equal('default');
         });

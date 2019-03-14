@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint *.js **/*.js",
-    "test": "istanbul cover _mocha test/index.js && node test/perf.js",
-    "build": "yarn run lint && yarn test",
+    "test": "istanbul cover _mocha test/index.js",
+    "perf": "node test/perf.js",
+    "build": "yarn run lint && yarn test && yarn perf",
     "rep": "open coverage/lcov-report/index.html",
     "all": "yarn run lint && yarn test && yarn run rep",
     "wrap": "rm -rf node_modules; rm yarn.lock; yarn cache clean && yarn"
@@ -21,9 +22,7 @@
   ],
   "author": "Yoni Medoff",
   "license": "MIT",
-  "dependencies": {
-    "lodash.get": "^4.4.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-spies": "^0.7.1",
